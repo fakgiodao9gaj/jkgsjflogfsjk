@@ -1,6 +1,4 @@
-// Change YOUR_KEY by the OpenAI key that you get in https://platform.openai.com/account/api-keys
-// If you dont have any key, create an account then create a new key.
-const OPENAI_API_KEY = "YOUR_KEY"
+const OPENAI_API_KEY = "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"
 
 window.onload=function(){
     // This is to bring the button and add a envent listener, so when it get clicked it will execute the paint function
