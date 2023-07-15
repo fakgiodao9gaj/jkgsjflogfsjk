@@ -1,77 +1,77 @@
 <!DOCTYPE html>
 <html>
 <head>
-   <title>CustomHook</title>
-   <style>
-      body {
-         background-color: #000;
-         color: #808080;
-         text-align: center;
-         font-size: 1.2em;
-      }
-      input, textarea {
-         width: 80%;
-         height: 50px; /* Увеличение высоты строк */
-         font-size: 1em; /* Увеличение размера шрифта */
-         margin: 10px auto;
-         display: block;
-      }
-      button {
-         border-radius: 25px;
-         padding: 10px 20px;
-         background: #808080;
-         color: #000;
-         display: inline-block;
-         margin: 10px auto;
-      }
-      #errorMessage {
-         color: red;
-         visibility: hidden;
-      }
-      .embedFields {
-         margin-bottom: 20px;
-      }
-      .accordion {
-         background-color: #eee;
-         color: #444;
-         cursor: pointer;
-         padding: 18px;
-         width: 100%;
-         border: none;
-         text-align: left;
-         outline: none;
-         transition: 0.4s;
-      }
-      .panel {
-         padding: 0 18px;
-         display: none;
-         background-color: white;
-         overflow: hidden;
-         transition: max-height 0.2s ease-out;
-      }
-   </style>
-   <script>
-      var embedCount = 0;
+    <title>CustomHook</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #808080;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        input, textarea {
+            width: 80%;
+            height: 50px; /* Increase line height */
+            font-size: 1em; /* Increase font size */
+            margin: 10px auto;
+            display: block;
+        }
+        button {
+            border-radius: 25px;
+            padding: 10px 20px;
+            background: #808080;
+            color: #000;
+            display: inline-block;
+            margin: 10px auto;
+        }
+        #errorMessage {
+            color: red;
+            visibility: hidden;
+        }
+        .embedFields {
+            margin-bottom: 20px;
+        }
+        .accordion {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            transition: 0.4s;
+        }
+        .panel {
+            padding: 0 18px;
+            max-height: 0;
+            overflow: hidden;
+            background-color: white;
+            transition: max-height 0.5s ease-out;
+        }
+    </style>
+    <script>
+        var embedCount = 0;
 
-      function updateCharCount(elementId, counterId, maxChars) {
-         var element = document.getElementById(elementId);
-         var counter = document.getElementById(counterId);
-         var charCount = element.value.length;
-         counter.textContent = charCount + "/" + maxChars;
-         counter.style.color = charCount <= maxChars ? "#808080" : "red";
-         if (charCount === maxChars) {
-            showMessage("МАКСИМУМ СИМВОЛОВ");
-         }
-      }
+        function updateCharCount(elementId, counterId, maxChars) {
+            var element = document.getElementById(elementId);
+            var counter = document.getElementById(counterId);
+            var charCount = element.value.length;
+            counter.textContent = charCount + "/" + maxChars;
+            counter.style.color = charCount <= maxChars ? "#808080" : "red";
+            if (charCount === maxChars) {
+                showMessage("МАКСИМУМ СИМВОЛОВ");
+            }
+        }
 
-      function showMessage(message) {
-         var errorMessage = document.getElementById("errorMessage");
-         errorMessage.textContent = message;
-         errorMessage.style.visibility = "visible";
-         setTimeout(function() {
-            errorMessage.style.visibility = "hidden";
-         }, 4000);
-      }
+        function showMessage(message) {
+            var errorMessage = document.getElementById("errorMessage");
+            errorMessage.textContent = message;
+            errorMessage.style.visibility = "visible";
+            setTimeout(function() {
+                errorMessage.style.visibility = "hidden";
+            }, 4000);
+        }
 
       function sendWebhook() {
          var url = document.getElementById("webhookUrl").value;
@@ -126,43 +126,46 @@
          });
       }
 
-      function addEmbed() {
-         if (embedCount >= 3) {
-            showMessage("МАКСИМУМ 3 ЭМБЕДА!");
-            return;
-         }
-
-         var accordion = document.createElement("button");
-         accordion.className = "accordion";
-         accordion.textContent = "Embed #" + (embedCount + 1);
-         document.body.appendChild(accordion);
-
-         var embedFields = document.createElement("div");
-         embedFields.className = "panel";
-         embedFields.innerHTML = `
-            <input type="text" id="embedTitle${embedCount}" placeholder="Embed Title"><br>
-            <textarea id="embedDescription${embedCount}" placeholder="Embed Description" oninput="updateCharCount('embedDescription${embedCount}', 'embedDescriptionCount${embedCount}', 2000)"></textarea>
-            <span id="embedDescriptionCount${embedCount}" style="color: #808080;">0/2000</span><br>
-            <input type="text" id="embedColor${embedCount}" placeholder="EmbedColor (Hex)"><br>
-            <input type="text" id="embedImageUrl${embedCount}" placeholder="Embed Image URL"><br>
-            <button onclick="removeEmbed(${embedCount})">Remove Embed</button><br>
-         `;
-         document.body.appendChild(embedFields);
-
-         accordion.addEventListener("click", function() {
-            this.classList.toggle("active");
-            var panel = this.nextElementSibling;
-            if (panel.style.display === "block") {
-               panel.style.display = "none";
-            } else {
-               panel.style.display = "block";
+        function addEmbed() {
+            if (embedCount >= 3) {
+                showMessage("МАКСИМУМ 3 ЭМБЕДА!");
+                return;
             }
-         });
 
-         embedCount++;
-      }
+            var accordion = document.createElement("button");
+            accordion.className = "accordion";
+            accordion.textContent = "Embed #" + (embedCount + 1);
+            document.body.appendChild(accordion);
 
-      function removeEmbed(index) {
+            var embedFields = document.createElement("div");
+            embedFields.className = "panel";
+            embedFields.innerHTML = `
+                <input type="text" id="embedTitle${embedCount}" placeholder="Embed Title"><br>
+                <textarea id="embedDescription${embedCount}" placeholder="Embed Description" oninput="updateCharCount('embedDescription${embedCount}', 'embedDescriptionCount${embedCount}', 2000)"></textarea>
+                <span id="embedDescriptionCount${embedCount}">0/2000</span>
+                <input type="text" id="embedColor${embedCount}" placeholder="Embed Color (hex)"><br>
+                <input type="text" id="embedImageUrl${embedCount}" placeholder="Embed Image URL"><br>
+                <button onclick="removeEmbed(${embedCount})">Remove Embed</button><br>`
+            document.body.appendChild(embedFields);
+
+            accordion.addEventListener("click", function() {
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                if (panel.style.maxHeight){
+                    panel.style.maxHeight = null;
+                } else {
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                } 
+            });
+
+            embedCount++;
+        }
+
+        window.onload = function() {
+            var addEmbedButton = document.querySelector('.embedFields > button');
+            addEmbedButton.addEventListener('click', addEmbed);
+        }
+        function removeEmbed(index) {
          var embedFields = document.getElementById("embedTitle" + index).parentNode;
          var accordion = embedFields.previousElementSibling;
          if (embedFields && accordion) {
@@ -171,7 +174,7 @@
             embedCount--;
          }
       }
-   </script>
+    </script>
 </head>
 <body>
    <h1>CustomHook</h1>
