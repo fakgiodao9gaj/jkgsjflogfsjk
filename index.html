@@ -1,13 +1,127 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>HTML 5 Boilerplate</title>
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-	<script src="index.js"></script>
-  </body>
+<html>
+<head>
+   <title>CustomHook</title>
+   <style>
+      body {
+         background-color: #000;
+         color: #808080;
+         text-align: center;
+         font-size: 1.2em;
+      }
+      input, textarea {
+         width: 80%;
+         height: 50px; /* Увеличение высоты строк */
+         font-size: 1em; /* Увеличение размера шрифта */
+         margin: 10px auto;
+         display: block;
+      }
+      button {
+         border-radius: 25px;
+         padding: 10px 20px;
+         background: #808080;
+         color: #000;
+         display: inline-block;
+         margin: 10px auto;
+      }
+      #errorMessage {
+         color: red;
+      }
+      .embedFields {
+         margin-bottom: 20px;
+      }
+   </style>
+   <script>
+      var embedCount = 0;
+      function sendWebhook() {
+         var url = document.getElementById("webhookUrl").value;
+         var content = document.getElementById("content").value;
+         var username = document.getElementById("username").value;
+         var avatarUrl = document.getElementById("avatarUrl").value;
+
+         var data = {
+            "content": content,
+            "username": username,
+            "avatar_url": avatarUrl
+         };
+
+         for (var i = 0; i < embedCount; i++) {
+            var embedTitle = document.getElementById("embedTitle" + i).value;
+            var embedDescription = document.getElementById("embedDescription" + i).value;
+            var embedColor = document.getElementById("embedColor" + i).value;
+            var embedImageUrl = document.getElementById("embedImageUrl" + i).value;
+            
+            if (embedTitle || embedDescription || embedColor || embedImageUrl) {
+                data.embeds = data.embeds || [];
+                data.embeds.push({
+                    "title": embedTitle,
+                    "description": embedDescription,
+                    "color": parseInt(embedColor, 16),
+                    "image": {
+                        "url": embedImageUrl
+                    }
+                });
+            }
+         }
+
+         fetch(url, {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+         })
+         .then(response => response.text())
+         .then(result => {
+            console.log('Webhook sent successfully:', result);
+         })
+         .catch(error => {
+            console.error('Error sending webhook:', error);
+         });
+      }
+
+      function addEmbed() {
+         if (embedCount >= 3) {
+            var errorMessage = document.getElementById("errorMessage");
+            errorMessage.textContent = "МАКСИМУМ 3 ЭМБЕДА!";
+            errorMessage.style.visibility = "visible";
+            setTimeout(function() {
+                errorMessage.style.visibility = "hidden";
+            }, 4000);
+            return;
+         }
+
+         var embedFields = document.createElement("div");
+         embedFields.id = "embedFields" + embedCount;
+         embedFields.className = "embedFields";
+         embedFields.innerHTML = `
+            <input type="text" id="embedTitle${embedCount}" placeholder="Embed Title"><br>
+            <textarea id="embedDescription${embedCount}" placeholder="Embed Description"></textarea><br>
+            <input type="text" id="embedColor${embedCount}" placeholder="Embed Color (Hex)"><br>
+            <input type="text" id="embedImageUrl${embedCount}" placeholder="Embed Image URL"><br>
+            <button onclick="removeEmbed(${embedCount})">Remove Embed</button><br>
+         `;
+         document.body.appendChild(embedFields);
+         embedCount++;
+      }
+
+      function removeEmbed(index) {
+         var embedFields = document.getElementById("embedFields" + index);
+         if (embedFields) {
+            embedFields.parentNode.removeChild(embedFields);
+            embedCount--;
+         }
+      }
+   </script>
+</head>
+<body>
+   <h1>CustomHook</h1>
+   <input type="text" id="webhookUrl" placeholder="Webhook URL"><br>
+   <input type="text" id="username" placeholder="Username"><br>
+   <input type="text" id="avatarUrl" placeholder="Avatar URL"><br>
+   <textarea id="content" placeholder="Content"></textarea><br>
+   <button onclick="sendWebhook()">Send Webhook</button>
+   <button onclick="addEmbed()">Add Embed</button>
+   <p id="errorMessage"></p>
+</body>
 </html>
