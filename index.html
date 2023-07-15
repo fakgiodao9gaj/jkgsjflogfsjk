@@ -26,13 +26,53 @@
       }
       #errorMessage {
          color: red;
+         visibility: hidden;
       }
       .embedFields {
          margin-bottom: 20px;
       }
+      .accordion {
+         background-color: #eee;
+         color: #444;
+         cursor: pointer;
+         padding: 18px;
+         width: 100%;
+         border: none;
+         text-align: left;
+         outline: none;
+         transition: 0.4s;
+      }
+      .panel {
+         padding: 0 18px;
+         display: none;
+         background-color: white;
+         overflow: hidden;
+         transition: max-height 0.2s ease-out;
+      }
    </style>
    <script>
       var embedCount = 0;
+
+      function updateCharCount(elementId, counterId, maxChars) {
+         var element = document.getElementById(elementId);
+         var counter = document.getElementById(counterId);
+         var charCount = element.value.length;
+         counter.textContent = charCount + "/" + maxChars;
+         counter.style.color = charCount <= maxChars ? "#808080" : "red";
+         if (charCount === maxChars) {
+            showMessage("МАКСИМУМ СИМВОЛОВ");
+         }
+      }
+
+      function showMessage(message) {
+         var errorMessage = document.getElementById("errorMessage");
+         errorMessage.textContent = message;
+         errorMessage.style.visibility = "visible";
+         setTimeout(function() {
+            errorMessage.style.visibility = "hidden";
+         }, 4000);
+      }
+
       function sendWebhook() {
          var url = document.getElementById("webhookUrl").value;
          var content = document.getElementById("content").value;
@@ -40,27 +80,33 @@
          var avatarUrl = document.getElementById("avatarUrl").value;
 
          var data = {
-            "content": content,
-            "username": username,
-            "avatar_url": avatarUrl
+            "content": content
          };
+
+         if (username) {
+            data.username = username;
+         }
+
+         if (avatarUrl) {
+            data.avatar_url = avatarUrl;
+         }
 
          for (var i = 0; i < embedCount; i++) {
             var embedTitle = document.getElementById("embedTitle" + i).value;
             var embedDescription = document.getElementById("embedDescription" + i).value;
             var embedColor = document.getElementById("embedColor" + i).value;
             var embedImageUrl = document.getElementById("embedImageUrl" + i).value;
-            
+
             if (embedTitle || embedDescription || embedColor || embedImageUrl) {
-                data.embeds = data.embeds || [];
-                data.embeds.push({
-                    "title": embedTitle,
-                    "description": embedDescription,
-                    "color": parseInt(embedColor, 16),
-                    "image": {
-                        "url": embedImageUrl
-                    }
-                });
+               data.embeds = data.embeds || [];
+               data.embeds.push({
+                  "title": embedTitle,
+                  "description": embedDescription,
+                  "color": parseInt(embedColor, 16),
+                  "image": {
+                     "url": embedImageUrl
+                  }
+               });
             }
          }
 
@@ -82,33 +128,46 @@
 
       function addEmbed() {
          if (embedCount >= 3) {
-            var errorMessage = document.getElementById("errorMessage");
-            errorMessage.textContent = "МАКСИМУМ 3 ЭМБЕДА!";
-            errorMessage.style.visibility = "visible";
-            setTimeout(function() {
-                errorMessage.style.visibility = "hidden";
-            }, 4000);
+            showMessage("МАКСИМУМ 3 ЭМБЕДА!");
             return;
          }
 
+         var accordion = document.createElement("button");
+         accordion.className = "accordion";
+         accordion.textContent = "Embed #" + (embedCount + 1);
+         document.body.appendChild(accordion);
+
          var embedFields = document.createElement("div");
-         embedFields.id = "embedFields" + embedCount;
-         embedFields.className = "embedFields";
+         embedFields.className = "panel";
          embedFields.innerHTML = `
             <input type="text" id="embedTitle${embedCount}" placeholder="Embed Title"><br>
-            <textarea id="embedDescription${embedCount}" placeholder="Embed Description"></textarea><br>
-            <input type="text" id="embedColor${embedCount}" placeholder="Embed Color (Hex)"><br>
+            <textarea id="embedDescription${embedCount}" placeholder="Embed Description" oninput="updateCharCount('embedDescription${embedCount}', 'embedDescriptionCount${embedCount}', 2000)"></textarea>
+            <span id="embedDescriptionCount${embedCount}" style="color: #808080;">0/2000</span><br>
+            <input type="text" id="embedColor${embedCount}" placeholder="EmbedColor (Hex)"><br>
             <input type="text" id="embedImageUrl${embedCount}" placeholder="Embed Image URL"><br>
             <button onclick="removeEmbed(${embedCount})">Remove Embed</button><br>
          `;
          document.body.appendChild(embedFields);
+
+         accordion.addEventListener("click", function() {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.display === "block") {
+               panel.style.display = "none";
+            } else {
+               panel.style.display = "block";
+            }
+         });
+
          embedCount++;
       }
 
       function removeEmbed(index) {
-         var embedFields = document.getElementById("embedFields" + index);
-         if (embedFields) {
+         var embedFields = document.getElementById("embedTitle" + index).parentNode;
+         var accordion = embedFields.previousElementSibling;
+         if (embedFields && accordion) {
             embedFields.parentNode.removeChild(embedFields);
+            accordion.parentNode.removeChild(accordion);
             embedCount--;
          }
       }
@@ -116,12 +175,13 @@
 </head>
 <body>
    <h1>CustomHook</h1>
-   <input type="text" id="webhookUrl" placeholder="Webhook URL"><br>
-   <input type="text" id="username" placeholder="Username"><br>
-   <input type="text" id="avatarUrl" placeholder="Avatar URL"><br>
-   <textarea id="content" placeholder="Content"></textarea><br>
-   <button onclick="sendWebhook()">Send Webhook</button>
+   <input type="text" id="webhookUrl" placeholder="Webhook URL">
+   <input type="text" id="username" placeholder="Username">
+   <input type="text" id="avatarUrl" placeholder="Avatar URL">
+   <textarea id="content" placeholder="Content" oninput="updateCharCount('content', 'contentCount', 2000)"></textarea>
+   <span id="contentCount" style="color: #808080;">0/2000</span><br>
    <button onclick="addEmbed()">Add Embed</button>
+   <button onclick="sendWebhook()">Send Webhook</button>
    <p id="errorMessage"></p>
 </body>
 </html>
